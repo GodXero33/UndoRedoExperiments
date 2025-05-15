@@ -5,14 +5,17 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 		<link rel="stylesheet" href="main.css">
-		<script type="text/javascript" src="sketch.js" defer></script>
+		<script type="module" src="sketch.js" defer></script>
 	</head>
 	<body>
 		<main id="main-container">
-			<canvas id="canvas"></canvas>
-			<input type="text" id="input">
-			<button id="undoBtn">UNDO</button>
-			<button id="redoBtn">REDO</button>
+			<div id="control-cont">
+				<input type="text" id="input">
+				<button id="changeBtn">CHANGE</button>
+				<button id="undoBtn">UNDO</button>
+				<button id="redoBtn">REDO</button>
+			</div>
+			<div id="tree-view-cont"></div>
 		</main>
 	</body>
 </html>

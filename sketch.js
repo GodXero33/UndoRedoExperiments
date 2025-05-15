@@ -1,140 +1,51 @@
-class LinearHistoryNode {
-	constructor (value) {
-		this.value = value;
-		this.child = null;
-		this.parent = null;
-	}
-}
+import { LinearHistoryManager } from "./history-manager.js";
 
-const ctx = canvas.getContext('2d');
-let width = 0;
-let height = 0;
-let headNode = null;
-let leafNode = null;
-let currentNode = null;
-const padX = 50;
-const padY = 50;
-const gap = 50;
-const nodeHeight = 50;
-const nodeWidth = 100;
+const historyManager = new LinearHistoryManager('');
+console.log(historyManager);
+updateTreeView();
 
-function makeChange (value) {
-	const newNode = new LinearHistoryNode(value);
+function updateTreeView () {
+	let cur = historyManager.head;
+	let html = '';
+	let nodeCount = 0;
 
-	if (!headNode) {
-		headNode = newNode;
-		leafNode = newNode;
-		currentNode = newNode;
-		return;
+	while (cur) {
+		html += `<div class="node${cur === historyManager.current ? ' current' : ''}"><div class="value">${cur.value}</div>`;
+		nodeCount++;
+		cur = cur.child;
 	}
 
-	newNode.parent = currentNode;
-	currentNode.child = newNode;
-	currentNode = newNode;
-	leafNode = newNode;
+	html += '</div>'.repeat(nodeCount);
+	document.getElementById('tree-view-cont').innerHTML = html;
 }
 
-function undo () {
-	if (currentNode != headNode) currentNode = currentNode.parent;
-	draw();
+function change () {
+	if (input.value == '') return;
+
+	const change = historyManager.change(input.value);
+	input.value = '';
+
+	updateTreeView();
+	input.focus();
+	console.log(change);
 }
 
-function redo () {
-	if (currentNode != leafNode) currentNode = currentNode.child;
-	draw();
-}
+input.addEventListener('keydown', event => {
+	if (event.code === 'Enter') change();
+});
 
-function draw () {
-	ctx.clearRect(0, 0, width, height);
+changeBtn.addEventListener('click', change);
 
-	let colsCount = 0;
+undoBtn.addEventListener('click', () => {
+	const change = historyManager.undo();
 
-	while (colsCount * nodeWidth + (colsCount - 1) * gap <= width - padX * 2) {
-		colsCount++;
-	}
+	updateTreeView();
+	console.log(change);
+});
 
-	colsCount--;
+redoBtn.addEventListener('click', () => {
+	const change = historyManager.redo();
 
-	if (colsCount < 1) colsCount = 1;
-
-	let checkNode = headNode;
-	let x = 0;
-	let y = 0;
-	let px = 0;
-	let py = 0;
-	let dir = true;
-
-	ctx.strokeStyle = '#ffffff';
-
-	ctx.beginPath();
-
-	while (checkNode) {
-		if (checkNode !== headNode) {
-			ctx.moveTo(px + nodeWidth * 0.5, py + nodeHeight * 0.5);
-			ctx.lineTo(x * (nodeWidth + gap) + padX + nodeWidth * 0.5, y * (nodeHeight + gap) + padY + nodeHeight * 0.5);
-		}
-
-		ctx.fillStyle = checkNode === currentNode ? '#ff8899' : '#ffffff';
-		ctx.fillRect(x * (nodeWidth + gap) + padX, y * (nodeHeight + gap) + padY, nodeWidth, nodeHeight);
-
-		ctx.fillStyle = '#ff00ff';
-		ctx.fillText(checkNode.value, x * (nodeWidth + gap) + padX + nodeWidth * 0.1, y * (nodeHeight + gap) + padY + nodeHeight * 0.1);
-
-		px = x * (nodeWidth + gap) + padX;
-		py = y * (nodeHeight + gap) + padY;
-
-		if (dir) {
-			x++;
-
-			if (x == colsCount) {
-				x = colsCount - 1;
-				y++;
-				dir = !dir;
-			}
-		} else {
-			x--;
-
-			if (x == -1) {
-				x = 0;
-				y++;
-				dir = !dir;
-			}
-		}
-
-		checkNode = checkNode.child;
-	}
-
-	ctx.stroke();
-}
-
-function resize () {
-	width = window.innerWidth;
-	height = window.innerHeight;
-
-	canvas.width = width;
-	canvas.height = height;
-
-	ctx.font = `${nodeHeight * 0.8}px Arial`;
-	ctx.textBaseline = 'hanging';
-
-	draw();
-}
-
-function init () {
-	resize();
-	window.addEventListener('resize', resize);
-
-	input.addEventListener('keydown', event => {
-		if (event.code === 'Enter' && input.value !== '') {
-			makeChange(input.value);
-			draw();
-
-			input.value = '';
-		}
-	});
-
-	undoBtn.addEventListener('click', undo);
-	redoBtn.addEventListener('click', redo);
-}
-
-init();
+	updateTreeView();
+	console.log(change);
+});
