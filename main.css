@@ -42,7 +42,7 @@ body {
 	height: 100%;
 }
 
-#input {
+#input, button {
 	position: absolute;
 	padding: 0.5rem;
 	bottom: 0;
@@ -51,4 +51,14 @@ body {
 	height: fit-content;
 	color: #000000;
 	font-size: 1rem;
+}
+
+#undoBtn {
+	left: 250px;
+	cursor: pointer;
+}
+
+#redoBtn {
+	left: 500px;
+	cursor: pointer;
 }

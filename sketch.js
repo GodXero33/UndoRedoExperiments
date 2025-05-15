@@ -1,8 +1,8 @@
 class LinearHistoryNode {
-	constructor (value, parent, child) {
+	constructor (value) {
 		this.value = value;
-		this.parent = parent;
-		this.child = child;
+		this.child = null;
+		this.parent = null;
 	}
 }
 
@@ -11,6 +11,7 @@ let width = 0;
 let height = 0;
 let headNode = null;
 let leafNode = null;
+let currentNode = null;
 const padX = 50;
 const padY = 50;
 const gap = 50;
@@ -23,11 +24,24 @@ function makeChange (value) {
 	if (!headNode) {
 		headNode = newNode;
 		leafNode = newNode;
+		currentNode = newNode;
 		return;
 	}
 
-	leafNode.child = newNode;
+	newNode.parent = currentNode;
+	currentNode.child = newNode;
+	currentNode = newNode;
 	leafNode = newNode;
+}
+
+function undo () {
+	if (currentNode != headNode) currentNode = currentNode.parent;
+	draw();
+}
+
+function redo () {
+	if (currentNode != leafNode) currentNode = currentNode.child;
+	draw();
 }
 
 function draw () {
@@ -43,25 +57,28 @@ function draw () {
 
 	if (colsCount < 1) colsCount = 1;
 
-	let currentNode = headNode;
+	let checkNode = headNode;
 	let x = 0;
 	let y = 0;
 	let px = 0;
 	let py = 0;
 	let dir = true;
 
-	ctx.fillStyle = '#ffffff';
 	ctx.strokeStyle = '#ffffff';
 
 	ctx.beginPath();
 
-	while (currentNode) {
-		ctx.fillRect(x * (nodeWidth + gap) + padX, y * (nodeHeight + gap) + padY, nodeWidth, nodeHeight);
-
-		if (currentNode !== headNode) {
+	while (checkNode) {
+		if (checkNode !== headNode) {
 			ctx.moveTo(px + nodeWidth * 0.5, py + nodeHeight * 0.5);
 			ctx.lineTo(x * (nodeWidth + gap) + padX + nodeWidth * 0.5, y * (nodeHeight + gap) + padY + nodeHeight * 0.5);
 		}
+
+		ctx.fillStyle = checkNode === currentNode ? '#ff8899' : '#ffffff';
+		ctx.fillRect(x * (nodeWidth + gap) + padX, y * (nodeHeight + gap) + padY, nodeWidth, nodeHeight);
+
+		ctx.fillStyle = '#ff00ff';
+		ctx.fillText(checkNode.value, x * (nodeWidth + gap) + padX + nodeWidth * 0.1, y * (nodeHeight + gap) + padY + nodeHeight * 0.1);
 
 		px = x * (nodeWidth + gap) + padX;
 		py = y * (nodeHeight + gap) + padY;
@@ -84,7 +101,7 @@ function draw () {
 			}
 		}
 
-		currentNode = currentNode.child;
+		checkNode = checkNode.child;
 	}
 
 	ctx.stroke();
@@ -96,6 +113,9 @@ function resize () {
 
 	canvas.width = width;
 	canvas.height = height;
+
+	ctx.font = `${nodeHeight * 0.8}px Arial`;
+	ctx.textBaseline = 'hanging';
 
 	draw();
 }
@@ -112,6 +132,9 @@ function init () {
 			input.value = '';
 		}
 	});
+
+	undoBtn.addEventListener('click', undo);
+	redoBtn.addEventListener('click', redo);
 }
 
 init();
