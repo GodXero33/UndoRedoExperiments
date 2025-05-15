@@ -82,9 +82,7 @@ button {
 	padding-left: 0.8rem;
 	top: 0;
 	left: 0;
-	width: fit-content;
-	max-width: 500px;
-	min-width: 200px;
+	width: 100%;
 	height: fit-content;
 	background-color: #ffffff;
 	border: 2px solid #000000;
